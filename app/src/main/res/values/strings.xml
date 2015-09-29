@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">JogoDaVelhaBluetooth</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_tela_device_list">TelaDeviceList</string>
+    <string name="title_activity_tela_nome">TelaNome</string>
+    <string name="title_activity_tela_vencedor">TelaVencedor</string>
+</resources>
