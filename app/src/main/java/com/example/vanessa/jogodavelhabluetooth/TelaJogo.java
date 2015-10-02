@@ -3,6 +3,7 @@ package com.example.vanessa.jogodavelhabluetooth;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -62,6 +63,9 @@ public class TelaJogo extends AppCompatActivity {
     public static final int MESSAGE_WRITE = 3;
     public static final int MESSAGE_DEVICE_NAME = 4;
     public static final int MESSAGE_TOAST = 5;
+    private String nomeRecebido;
+    private int flagGanhador;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +80,6 @@ public class TelaJogo extends AppCompatActivity {
         btng = (Button) findViewById(R.id.g);
         btnh = (Button) findViewById(R.id.h);
         btni = (Button) findViewById(R.id.i);
-        //btnnovoJogo = (Button) findViewById(R.id.buttonNovoJogo);
         btna.setOnClickListener(buttona);
         btnb.setOnClickListener(buttonb);
         btnc.setOnClickListener(buttonc);
@@ -86,14 +89,13 @@ public class TelaJogo extends AppCompatActivity {
         btng.setOnClickListener(buttong);
         btnh.setOnClickListener(buttonh);
         btni.setOnClickListener(buttoni);
-        //btnnovoJogo.setOnClickListener(buttonnovoJogo);
         buttonBackground = btna.getBackground();
-        limpaMatriz();
         jogando = (TextView) findViewById(R.id.Jogadores);
+        limpaMatriz();
+        flagGanhador = 0;
 
         Bundle b = this.getIntent().getExtras();
         nomeJogadores = b.getStringArray("MENSAGEM");
-        jogando.setText(nomeJogadores[0]+"[X]  vs  "+nomeJogadores[1]+"[O]");
 
         // instancia o adaptador bluetooth do dispositivo
         myBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -103,7 +105,28 @@ public class TelaJogo extends AppCompatActivity {
             return;
         }
     }
-
+    public void desabilitaBotoes(){
+        btna.setEnabled(false);
+        btnb.setEnabled(false);
+        btnc.setEnabled(false);
+        btnd.setEnabled(false);
+        btne.setEnabled(false);
+        btnf.setEnabled(false);
+        btng.setEnabled(false);
+        btnh.setEnabled(false);
+        btni.setEnabled(false);
+    }
+    public void habilitaBotoes(){
+        btna.setEnabled(true);
+        btnb.setEnabled(true);
+        btnc.setEnabled(true);
+        btnd.setEnabled(true);
+        btne.setEnabled(true);
+        btnf.setEnabled(true);
+        btng.setEnabled(true);
+        btnh.setEnabled(true);
+        btni.setEnabled(true);
+    }
     public void limpaMatriz(){
         for(int i = 0 ; i < 3; i++){
             for(int j = 0 ; j < 3; j++){
@@ -111,14 +134,16 @@ public class TelaJogo extends AppCompatActivity {
             }
         }
     }
-    public void chamaTelaJogador(){
+    public void chamaTelaVencedor(){
+
+
         Intent i = new Intent(getApplicationContext(), TelaVencedor.class);
         //Antes de testar se alguem ganhou o jogador é alterado
         //por isso o inverso e testado abaixo
-        if(jogador == 2){
-            i.putExtra(MENSAGEM,nomeJogadores[0]);
-        }else if(jogador == 1){
-            i.putExtra(MENSAGEM, nomeJogadores[1]);
+        if(flagGanhador == 0){
+            i.putExtra(MENSAGEM,nomeJogadores[0]+" Ganhou!!!");
+        }else if(flagGanhador == 1){
+            i.putExtra(MENSAGEM, nomeRecebido+" Ganhou!!!");
         }
         startActivity(i);
     }
@@ -126,6 +151,13 @@ public class TelaJogo extends AppCompatActivity {
     public void atualizaMatriz(String posicaoMatriz){
 
         char[] valorMatriz = posicaoMatriz.toCharArray();
+
+        if(!Character.isDigit(valorMatriz[0])){
+            jogando.setText(nomeJogadores[0]+"  vs  "+String.valueOf(valorMatriz));
+            nomeRecebido = String.valueOf(valorMatriz);
+            return;
+        }
+
         int i, j;
         i = Integer.parseInt(String.valueOf(valorMatriz[0]));
         j = Integer.parseInt(String.valueOf(valorMatriz[1]));
@@ -150,12 +182,21 @@ public class TelaJogo extends AppCompatActivity {
         }else if((i == 2) && (j == 2)){
             btni.setText(String.valueOf(valorMatriz[2]));
         }
+
+        if(valorMatriz[3] == '1'){
+
+            chamaTelaVencedor();
+        }
+
         if(jogador == 1){
             jogador = 2;
         }else{
             jogador = 1;
         }
 
+    }
+    public void enviaNome(){
+        sendMessage(String.valueOf(nomeJogadores[0]));
     }
 
     View.OnClickListener buttona = new View.OnClickListener() {
@@ -177,19 +218,24 @@ public class TelaJogo extends AppCompatActivity {
                     btna.setBackgroundColor(173216230);
                     btnb.setBackgroundColor(173216230);
                     btnc.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("00" + matrizJogo[0][0])+"1");
+                    chamaTelaVencedor();
                 } else if ((matrizJogo[1][0] == matrizJogo[2][0]) && (matrizJogo[0][0] == matrizJogo[2][0])) {
                     btna.setBackgroundColor(173216230);
                     btnd.setBackgroundColor(173216230);
                     btng.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("00" + matrizJogo[0][0])+"1");
+                    chamaTelaVencedor();
                 } else if ((matrizJogo[1][1] == matrizJogo[2][2]) && (matrizJogo[0][0] == matrizJogo[2][2])) {
                     btna.setBackgroundColor(173216230);
                     btne.setBackgroundColor(173216230);
                     btni.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("00" + matrizJogo[0][0])+"1");
+                    chamaTelaVencedor();
+                }else{
+                    sendMessage(String.valueOf("00" + matrizJogo[0][0])+"0");
                 }
-                sendMessage(String.valueOf("00"+matrizJogo[0][0]));
+
             }
         }
     };
@@ -212,14 +258,18 @@ public class TelaJogo extends AppCompatActivity {
                     btna.setBackgroundColor(173216230);
                     btnb.setBackgroundColor(173216230);
                     btnc.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("01" + matrizJogo[0][0]) + "1");
+                    chamaTelaVencedor();
                 } else if ((matrizJogo[0][1] == matrizJogo[1][1]) && (matrizJogo[0][1] == matrizJogo[2][1])) {
                     btnb.setBackgroundColor(173216230);
                     btne.setBackgroundColor(173216230);
                     btnh.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("01" + matrizJogo[0][0]) + "1");
+                    chamaTelaVencedor();
+                }else{
+                    sendMessage(String.valueOf("01" + matrizJogo[0][0]) + "0");
                 }
-                sendMessage(String.valueOf("01"+matrizJogo[0][1]));
+
             }
         }
     };
@@ -242,19 +292,23 @@ public class TelaJogo extends AppCompatActivity {
                     btna.setBackgroundColor(173216230);
                     btnb.setBackgroundColor(173216230);
                     btnc.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("02"+matrizJogo[0][2])+"1");
+                    chamaTelaVencedor();
                 } else if ((matrizJogo[0][2] == matrizJogo[1][2]) && (matrizJogo[0][2] == matrizJogo[2][2])) {
                     btnc.setBackgroundColor(173216230);
                     btnf.setBackgroundColor(173216230);
                     btni.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("02" + matrizJogo[0][2]) + "1");
+                    chamaTelaVencedor();
                 } else if ((matrizJogo[0][2] == matrizJogo[1][1]) && (matrizJogo[0][2] == matrizJogo[2][0])) {
                     btnc.setBackgroundColor(173216230);
                     btne.setBackgroundColor(173216230);
                     btng.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("02" + matrizJogo[0][2]) + "1");
+                    chamaTelaVencedor();
+                }else{
+                    sendMessage(String.valueOf("02"+matrizJogo[0][2])+"0");
                 }
-                sendMessage(String.valueOf("02"+matrizJogo[0][2]));
             }
         }
     };
@@ -277,14 +331,18 @@ public class TelaJogo extends AppCompatActivity {
                     btna.setBackgroundColor(173216230);
                     btnd.setBackgroundColor(173216230);
                     btng.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("10" + matrizJogo[1][0]) + "1");
+                    chamaTelaVencedor();
                 } else if ((matrizJogo[1][0] == matrizJogo[1][1]) && (matrizJogo[1][0] == matrizJogo[1][2])) {
                     btnd.setBackgroundColor(173216230);
                     btne.setBackgroundColor(173216230);
                     btnf.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("10" + matrizJogo[1][0]) + "1");
+                    chamaTelaVencedor();
+                }else{
+                    sendMessage(String.valueOf("10"+matrizJogo[1][0])+"0");
                 }
-                sendMessage(String.valueOf("10"+matrizJogo[1][0]));
+
             }
         }
     };
@@ -307,24 +365,30 @@ public class TelaJogo extends AppCompatActivity {
                     btna.setBackgroundColor(173216230);
                     btne.setBackgroundColor(173216230);
                     btni.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("11" + matrizJogo[1][1]) + "1");
+                    chamaTelaVencedor();
                 } else if ((matrizJogo[0][2] == matrizJogo[1][1]) && (matrizJogo[1][1] == matrizJogo[2][0])) {
                     btnc.setBackgroundColor(173216230);
                     btne.setBackgroundColor(173216230);
                     btng.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("11" + matrizJogo[1][1]) + "1");
+                    chamaTelaVencedor();
                 } else if ((matrizJogo[0][1] == matrizJogo[1][1]) && (matrizJogo[1][1] == matrizJogo[2][1])) {
                     btnb.setBackgroundColor(173216230);
                     btne.setBackgroundColor(173216230);
                     btnh.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("11" + matrizJogo[1][1]) + "1");
+                    chamaTelaVencedor();
                 } else if ((matrizJogo[1][0] == matrizJogo[1][1]) && (matrizJogo[1][1] == matrizJogo[1][2])) {
                     btnd.setBackgroundColor(173216230);
                     btne.setBackgroundColor(173216230);
                     btnf.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("11" + matrizJogo[1][1]) + "1");
+                    chamaTelaVencedor();
+                }else{
+                    sendMessage(String.valueOf("11"+matrizJogo[1][1])+"0");
                 }
-                sendMessage(String.valueOf("11"+matrizJogo[1][1]));
+
             }
         }
     };
@@ -347,14 +411,18 @@ public class TelaJogo extends AppCompatActivity {
                     btnc.setBackgroundColor(173216230);
                     btnf.setBackgroundColor(173216230);
                     btni.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("12" + matrizJogo[1][2]) + "1");
+                    chamaTelaVencedor();
                 } else  if ((matrizJogo[1][0] == matrizJogo[1][2]) && (matrizJogo[1][2] == matrizJogo[1][1])) {
                     btnd.setBackgroundColor(173216230);
                     btne.setBackgroundColor(173216230);
                     btnf.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("12" + matrizJogo[1][2]) + "1");
+                    chamaTelaVencedor();
+                }else{
+                    sendMessage(String.valueOf("12"+matrizJogo[1][2])+"0");
                 }
-                sendMessage(String.valueOf("12"+matrizJogo[1][2]));
+
             }
         }
     };
@@ -377,19 +445,24 @@ public class TelaJogo extends AppCompatActivity {
                     btng.setBackgroundColor(173216230);
                     btnh.setBackgroundColor(173216230);
                     btni.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("20" + matrizJogo[2][0]) + "1");
+                    chamaTelaVencedor();
                 } else if ((matrizJogo[0][0] == matrizJogo[2][0]) && (matrizJogo[2][0] == matrizJogo[1][0])) {
                     btna.setBackgroundColor(173216230);
                     btnd.setBackgroundColor(173216230);
                     btng.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("20" + matrizJogo[2][0]) + "1");
+                    chamaTelaVencedor();
                 } else if ((matrizJogo[1][1] == matrizJogo[2][0]) && (matrizJogo[2][0] == matrizJogo[0][2])) {
                     btng.setBackgroundColor(173216230);
                     btne.setBackgroundColor(173216230);
                     btnc.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("20" + matrizJogo[2][0]) + "1");
+                    chamaTelaVencedor();
+                }else{
+                    sendMessage(String.valueOf("20"+matrizJogo[2][0])+"0");
                 }
-                sendMessage(String.valueOf("20"+matrizJogo[2][0]));
+
             }
         }
     };
@@ -412,14 +485,18 @@ public class TelaJogo extends AppCompatActivity {
                     btng.setBackgroundColor(173216230);
                     btnh.setBackgroundColor(173216230);
                     btni.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("21" + matrizJogo[2][1])+"1");
+                    chamaTelaVencedor();
                 } else if ((matrizJogo[0][1] == matrizJogo[2][1]) && (matrizJogo[2][1] == matrizJogo[1][1])) {
                     btnb.setBackgroundColor(173216230);
                     btne.setBackgroundColor(173216230);
                     btnh.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("21" + matrizJogo[2][1]) + "1");
+                    chamaTelaVencedor();
+                }else{
+                    sendMessage(String.valueOf("21" + matrizJogo[2][1])+"0");
                 }
-                sendMessage(String.valueOf("21"+matrizJogo[2][1]));
+
             }
         }
     };
@@ -442,19 +519,24 @@ public class TelaJogo extends AppCompatActivity {
                     btng.setBackgroundColor(173216230);
                     btnh.setBackgroundColor(173216230);
                     btni.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("22" + matrizJogo[2][2]) + "1");
+                    chamaTelaVencedor();
                 } else if ((matrizJogo[0][0] == matrizJogo[2][2]) && (matrizJogo[2][2] == matrizJogo[1][1])) {
                     btna.setBackgroundColor(173216230);
                     btne.setBackgroundColor(173216230);
                     btni.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("22" + matrizJogo[2][2]) + "1");
+                    chamaTelaVencedor();
                 } else if ((matrizJogo[0][2] == matrizJogo[2][2]) && (matrizJogo[2][2] == matrizJogo[1][2])) {
                     btnc.setBackgroundColor(173216230);
                     btnf.setBackgroundColor(173216230);
                     btni.setBackgroundColor(173216230);
-                    chamaTelaJogador();
+                    sendMessage(String.valueOf("22" + matrizJogo[2][2]) + "1");
+                    chamaTelaVencedor();
+                }else{
+                    sendMessage(String.valueOf("22"+matrizJogo[2][2])+"0");
                 }
-                sendMessage(String.valueOf("22"+matrizJogo[2][2]));
+
             }
         }
     };
@@ -537,6 +619,8 @@ public class TelaJogo extends AppCompatActivity {
     // Função para enviar uma string por bluetooth
     private void sendMessage(String message) {
 
+        desabilitaBotoes();
+
         if(jogador == 1){
             jogador = 2;
         }else{
@@ -574,6 +658,7 @@ public class TelaJogo extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(),"Connected to "+ mConnectedDeviceName,
                                     Toast.LENGTH_LONG).show();
 
+                            enviaNome();
                             break;
                         case BluetoothService.STATE_CONNECTING: // Se o estado passou para conectando
                             Toast.makeText(getApplicationContext(),"Connecting...",
@@ -599,6 +684,8 @@ public class TelaJogo extends AppCompatActivity {
 
                     // Coloca a mensagem recebida no text view
                     //msgTextView.setText(readMessage);
+
+                    habilitaBotoes();
 
                     //Atualiza matriz
                     atualizaMatriz(readMessage);
