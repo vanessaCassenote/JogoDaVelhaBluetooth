@@ -11,7 +11,7 @@ import android.widget.EditText;
 
 public class TelaNome extends AppCompatActivity {
     private Button btnPlay;
-    private EditText nome1;
+    private EditText nomeJogador;
     private String[] nomeJogadores = new String[2];
     public final static String MENSAGEM = "com.example.vanessa.activities.MENSAGEM";
 
@@ -20,19 +20,16 @@ public class TelaNome extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tela_nome);
         btnPlay = (Button) findViewById(R.id.btnPlay);
-        nome1 = (EditText) findViewById(R.id.fieldNome1);
+        nomeJogador = (EditText) findViewById(R.id.fieldNome);
         btnPlay.setOnClickListener(buttonPlay);
     }
 
     View.OnClickListener buttonPlay = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if(nome1.getText() != null){
-
-                Bundle b = new Bundle();
-                b.putStringArray("MENSAGEM", new String[]{String.valueOf(nome1.getText())});
+            if(nomeJogador.getText() != null){
                 Intent i = new Intent(getApplicationContext(), TelaJogo.class);
-                i.putExtras(b);
+                i.putExtra(MENSAGEM,String.valueOf(nomeJogador.getText()));
                 startActivity(i);
             }
         }
